@@ -1,10 +1,11 @@
 use std::f32::consts::PI;
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use bevy::math::{vec2, vec3, VectorSpace};
+use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy::window::PrimaryWindow;
+use bevy_pancam::{PanCam, PanCamPlugin};
 use rand::Rng;
 
 const WW: f32 = 1200.0;
@@ -82,10 +83,12 @@ fn main() {
         .init_state::<GameState>()
         .add_plugins(LogDiagnosticsPlugin::default())
         .add_plugins(FrameTimeDiagnosticsPlugin)
+        //external plugins
+        .add_plugins(PanCamPlugin::default())
+        //custom resources
         .insert_resource(ClearColor(Color::srgb_u8(
             BG_COLOR.0, BG_COLOR.1, BG_COLOR.2,
         )))
-        //custom resources
         .insert_resource(GlobalTextureAtlasHandle(None))
         .insert_resource(GlobalSpriteSheetHandle(None))
         .insert_resource(CursorPosition(None))
@@ -101,7 +104,8 @@ fn main() {
                 update_gun_transform, 
                 update_cursor_position,
                 handle_gun_input,
-                update_bullets
+                update_bullets,
+                camera_follow_player,
             ).run_if(in_state(GameState::InGame)))
         .run();
 }
@@ -120,7 +124,12 @@ fn load_assets(
 }
 
 fn setup_camera(mut commands: Commands) {
-    commands.spawn((Camera2d, Camera{..Default::default()}));
+    commands.spawn(
+        (
+            Camera2d, 
+            Camera{..Default::default()}
+        )
+    ).insert(PanCam::default());
 }
 
 fn init_world(
@@ -177,6 +186,22 @@ fn spawn_world_decoration(
     }
 }
 
+fn camera_follow_player(
+    player_query: Query<&Transform, With<Player>>,
+    mut camera_query: Query<&mut Transform, (With<Camera>, Without<Player>)>,
+){
+    if camera_query.is_empty() || player_query.is_empty(){
+        return;
+    }
+
+    let mut camera_transform = camera_query.single_mut();
+    let player_transform = player_query.single().translation;
+    let (x, y) = (player_transform.x, player_transform.y);
+
+    camera_transform.translation = camera_transform.translation.lerp(vec3(x, y, 1.0), 0.1);
+
+}   
+
 fn handle_player_input(mut query: Query<&mut Transform, With<Player>>, keyboard_input: Res<ButtonInput<KeyCode>>){
 
     if query.is_empty(){
@@ -208,6 +233,7 @@ fn handle_player_input(mut query: Query<&mut Transform, With<Player>>, keyboard_
 
     if delta.is_finite() && (w_key || s_key || a_key || d_key){
         transform.translation += vec3(delta.x, delta.y, 0.0) * PLAYER_SPEED;
+        transform.translation.z = 10.0;
     }
     
 }
@@ -244,7 +270,7 @@ fn handle_gun_input(
                     index: 16,
                 },
             ),
-            Transform::from_translation(vec3(gun_pos.x, gun_pos.y, 1.0)),
+            Transform::from_translation(vec3(gun_pos.x, gun_pos.y, 11.0)),
             Bullet,
             BulletDirection(*bullet_direction),
         ));
@@ -306,5 +332,6 @@ fn update_gun_transform(
         player_pos.y + offset * angle.sin() - 15.0
     );
     gun_transform.translation = vec3(new_gun_pos.x, new_gun_pos.y, gun_transform.translation.z);
+    gun_transform.translation.z = 11.0;
 }
 

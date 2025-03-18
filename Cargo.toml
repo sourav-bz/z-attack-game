@@ -5,6 +5,7 @@ edition = "2021"
 
 [dependencies]
 bevy = "0.15.3"
+bevy_pancam = "0.17.0"
 bevy_quit = "0.1.1"
 rand = "0.9.0"
 
