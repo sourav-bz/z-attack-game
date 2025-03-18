@@ -1,86 +1,58 @@
-//! Shows how to render simple primitive shapes with a single color.
-//!
-//! You can toggle wireframes with the space bar except on wasm. Wasm does not support
-//! `POLYGON_MODE_LINE` on the gpu.
-
+use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
-#[cfg(not(target_arch = "wasm32"))]
-use bevy::sprite::{Wireframe2dConfig, Wireframe2dPlugin};
+
+const WW: f32 = 1200.0;
+const WH: f32 = 700.0;
+const BG_COLOR: (u8, u8, u8) = (197, 204, 184);
+
+const SPRITE_SHEET_PATH: &str = "assets.png";
+const SPRITE_SCALE_FACTOR: f32 = 3.0;
+const TILE_W: u32 = 16;
+const TILE_H: u32 = 16;
+const SPRITE_SHEET_W: u32 = 8;
+const SPRITE_SHEET_H: u32 = 8;
 
 fn main() {
-    let mut app = App::new();
-    app.add_plugins((
-        DefaultPlugins,
-        #[cfg(not(target_arch = "wasm32"))]
-        Wireframe2dPlugin,
-    ))
-    .add_systems(Startup, setup);
-    #[cfg(not(target_arch = "wasm32"))]
-    app.add_systems(Update, toggle_wireframe);
-    app.run();
+    App::new()
+        .add_plugins(
+            DefaultPlugins
+                .set(ImagePlugin::default_nearest())
+                .set(WindowPlugin {
+                    primary_window: Some(Window {
+                        resizable: true,
+                        focused: true,
+                        resolution: (WW, WH).into(),
+                        ..default()
+                    }),
+                    ..default()
+                }),
+        )
+        .insert_resource(ClearColor(Color::srgb_u8(
+            BG_COLOR.0, BG_COLOR.1, BG_COLOR.2,
+        )))
+        .add_plugins(LogDiagnosticsPlugin::default())
+        .add_plugins(FrameTimeDiagnosticsPlugin)
+        .add_systems(Startup, (setup_camera, spawn_player))
+        .run();
 }
 
-const X_EXTENT: f32 = 900.;
+fn setup_camera(mut commands: Commands) {
+    commands.spawn((Camera2d, Camera{..Default::default()}));
+}
 
-fn setup(
-    mut commands: Commands,
-    mut meshes: ResMut<Assets<Mesh>>,
-    mut materials: ResMut<Assets<ColorMaterial>>,
-) {
-    commands.spawn(Camera2d);
+fn spawn_player(mut commands: Commands, asset_server: Res<AssetServer>, mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>){
+    let texture = asset_server.load(SPRITE_SHEET_PATH);
+    let layout = TextureAtlasLayout::from_grid(UVec2::new(TILE_W, TILE_H), SPRITE_SHEET_W, SPRITE_SHEET_H, None, None);
+    let texture_atlas_layout = texture_atlas_layouts.add(layout);
 
-    let shapes = [
-        meshes.add(Circle::new(50.0)),
-        meshes.add(CircularSector::new(50.0, 1.0)),
-        meshes.add(CircularSegment::new(50.0, 1.25)),
-        meshes.add(Ellipse::new(25.0, 50.0)),
-        meshes.add(Annulus::new(25.0, 50.0)),
-        meshes.add(Capsule2d::new(25.0, 50.0)),
-        meshes.add(Rhombus::new(75.0, 100.0)),
-        meshes.add(Rectangle::new(50.0, 100.0)),
-        meshes.add(RegularPolygon::new(50.0, 6)),
-        meshes.add(Triangle2d::new(
-            Vec2::Y * 50.0,
-            Vec2::new(-50.0, -50.0),
-            Vec2::new(50.0, -50.0),
-        )),
-    ];
-    let num_shapes = shapes.len();
-
-    for (i, shape) in shapes.into_iter().enumerate() {
-        // Distribute colors evenly across the rainbow.
-        let color = Color::hsl(360. * i as f32 / num_shapes as f32, 0.95, 0.7);
-
-        commands.spawn((
-            Mesh2d(shape),
-            MeshMaterial2d(materials.add(color)),
-            Transform::from_xyz(
-                // Distribute shapes from -X_EXTENT/2 to +X_EXTENT/2.
-                -X_EXTENT / 2. + i as f32 / (num_shapes - 1) as f32 * X_EXTENT,
-                0.0,
-                0.0,
-            ),
-        ));
-    }
-
-    #[cfg(not(target_arch = "wasm32"))]
     commands.spawn((
-        Text::new("Press space to toggle wireframes"),
-        Node {
-            position_type: PositionType::Absolute,
-            top: Val::Px(12.0),
-            left: Val::Px(12.0),
-            ..default()
-        },
+        Sprite::from_atlas_image(
+            texture,
+            TextureAtlas {
+                layout: texture_atlas_layout,
+                index: 0,
+            },
+        ),
+        Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
     ));
-}
-
-#[cfg(not(target_arch = "wasm32"))]
-fn toggle_wireframe(
-    mut wireframe_config: ResMut<Wireframe2dConfig>,
-    keyboard: Res<ButtonInput<KeyCode>>,
-) {
-    if keyboard.just_pressed(KeyCode::Space) {
-        wireframe_config.global = !wireframe_config.global;
-    }
 }
