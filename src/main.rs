@@ -1,7 +1,7 @@
 use std::f32::consts::PI;
 
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
-use bevy::math::{vec2, vec3};
+use bevy::math::{vec2, vec3, VectorSpace};
 use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy::window::PrimaryWindow;
@@ -23,6 +23,7 @@ const PLAYER_SPEED: f32 = 2.0;
 
 //bullet
 const BULLET_SPAWN_INTERVAL: f32 = 0.1;
+const BULLET_SPEED: f32 = 15.0;
 //resources
 #[derive(Resource)]
 struct GlobalTextureAtlasHandle(Option<Handle<TextureAtlasLayout>>);
@@ -44,6 +45,9 @@ struct GunTimer(Stopwatch);
 
 #[derive(Component)]
 struct Bullet;
+
+#[derive(Component)]
+struct BulletDirection(Vec3);
 
 //state
 #[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
@@ -86,7 +90,8 @@ fn main() {
                 handle_player_input, 
                 update_gun_transform, 
                 update_cursor_position,
-                handle_gun_input
+                handle_gun_input,
+                update_bullets
             ).run_if(in_state(GameState::InGame)))
         .run();
 }
@@ -195,6 +200,8 @@ fn handle_gun_input(
         return;
     }
 
+    let bullet_direction = gun_transform.local_x();
+
     if gun_timer.0.elapsed_secs() >= BULLET_SPAWN_INTERVAL {
         gun_timer.0.reset();
         commands.spawn((
@@ -206,7 +213,8 @@ fn handle_gun_input(
                 },
             ),
             Transform::from_translation(vec3(gun_pos.x, gun_pos.y, 1.0)),
-            Bullet
+            Bullet,
+            BulletDirection(*bullet_direction),
         ));
     }
 }
@@ -226,6 +234,19 @@ fn update_cursor_position(
     cursor_pos.0 = window.cursor_position()
         .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor).ok())
         .map(|ray| ray.origin.truncate());
+}
+
+fn update_bullets(
+    mut bullet_query: Query<(&mut Transform, &BulletDirection), With<Bullet>>,
+){
+    if bullet_query.is_empty(){
+        return;
+    }
+
+    for (mut transform, direction) in bullet_query.iter_mut(){
+        transform.translation += direction.0.normalize() * Vec3::splat(BULLET_SPEED);
+        transform.translation.z = 10.0;
+    }
 }
 
 fn update_gun_transform(
