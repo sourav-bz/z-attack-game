@@ -5,6 +5,7 @@ use bevy::math::{vec2, vec3, VectorSpace};
 use bevy::prelude::*;
 use bevy::time::Stopwatch;
 use bevy::window::PrimaryWindow;
+use rand::Rng;
 
 const WW: f32 = 1200.0;
 const WH: f32 = 900.0;
@@ -17,6 +18,11 @@ const TILE_W: u32 = 16;
 const TILE_H: u32 = 16;
 const SPRITE_SHEET_W: u32 = 8;
 const SPRITE_SHEET_H: u32 = 8;
+
+//world
+const NUM_WORLD_DECORATIONS: u32 = 1000;
+const WORLD_W: f32 = 3000.0;
+const WORLD_H: f32 = 2500.0;
 
 //player
 const PLAYER_SPEED: f32 = 2.0;
@@ -85,7 +91,11 @@ fn main() {
         .insert_resource(CursorPosition(None))
         //systems
         .add_systems(OnEnter(GameState::Loading), load_assets)
-        .add_systems(OnEnter(GameState::GameInit), (setup_camera, init_world))
+        .add_systems(OnEnter(GameState::GameInit), (
+                setup_camera, 
+                init_world,
+                spawn_world_decoration,
+        ))
         .add_systems(Update, (
                 handle_player_input, 
                 update_gun_transform, 
@@ -143,6 +153,28 @@ fn init_world(
         GunTimer(Stopwatch::new())
     ));
     next_state.set(GameState::InGame);
+}
+
+fn spawn_world_decoration(
+   mut commands: Commands, 
+    texture_atlas: Res<GlobalTextureAtlasHandle>, 
+    image_handle: Res<GlobalSpriteSheetHandle>
+){
+    let mut rng = rand::rng();
+    for _ in 0..NUM_WORLD_DECORATIONS{
+        let x = rng.random_range(-WORLD_W..WORLD_W);
+        let y = rng.random_range(-WORLD_H..WORLD_H);
+        commands.spawn((
+            Sprite::from_atlas_image(
+                image_handle.0.clone().unwrap(),
+                TextureAtlas {
+                    layout: texture_atlas.0.clone().unwrap(),
+                    index: rng.random_range(24..=25),
+                },
+            ),
+            Transform::from_translation(vec3(x, y, 0.0)).with_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
+        ));
+    }
 }
 
 fn handle_player_input(mut query: Query<&mut Transform, With<Player>>, keyboard_input: Res<ButtonInput<KeyCode>>){
