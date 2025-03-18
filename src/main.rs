@@ -1,5 +1,4 @@
 use std::f32::consts::PI;
-
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
@@ -7,38 +6,10 @@ use bevy::time::Stopwatch;
 use bevy::window::PrimaryWindow;
 use bevy_pancam::{PanCam, PanCamPlugin};
 use rand::Rng;
+use z_attack_game::resources::{GlobalSpriteSheetHandle, GlobalTextureAtlasHandle};
+use z_attack_game::*;
 
-const WW: f32 = 1200.0;
-const WH: f32 = 900.0;
-const BG_COLOR: (u8, u8, u8) = (197, 204, 184);
 
-//sprites
-const SPRITE_SHEET_PATH: &str = "assets.png";
-const SPRITE_SCALE_FACTOR: f32 = 3.0;
-const TILE_W: u32 = 16;
-const TILE_H: u32 = 16;
-const SPRITE_SHEET_W: u32 = 8;
-const SPRITE_SHEET_H: u32 = 8;
-
-//world
-const NUM_WORLD_DECORATIONS: u32 = 1000;
-const WORLD_W: f32 = 3000.0;
-const WORLD_H: f32 = 2500.0;
-
-//player
-const PLAYER_SPEED: f32 = 2.0;
-
-//bullet
-const BULLET_SPAWN_INTERVAL: f32 = 0.1;
-const BULLET_SPEED: f32 = 15.0;
-//resources
-#[derive(Resource)]
-struct GlobalTextureAtlasHandle(Option<Handle<TextureAtlasLayout>>);
-#[derive(Resource)]
-struct GlobalSpriteSheetHandle(Option<Handle<Image>>);
-
-#[derive(Resource)]
-struct CursorPosition(Option<Vec2>);
 
 //components
 #[derive(Component)]
@@ -55,15 +26,6 @@ struct Bullet;
 
 #[derive(Component)]
 struct BulletDirection(Vec3);
-
-//state
-#[derive(Debug, Clone, Copy, Default, Eq, PartialEq, Hash, States)]
-enum GameState {
-    #[default]
-    Loading,
-    GameInit,
-    InGame,
-}
 
 fn main() {
     App::new()
@@ -89,11 +51,8 @@ fn main() {
         .insert_resource(ClearColor(Color::srgb_u8(
             BG_COLOR.0, BG_COLOR.1, BG_COLOR.2,
         )))
-        .insert_resource(GlobalTextureAtlasHandle(None))
-        .insert_resource(GlobalSpriteSheetHandle(None))
-        .insert_resource(CursorPosition(None))
+        
         //systems
-        .add_systems(OnEnter(GameState::Loading), load_assets)
         .add_systems(OnEnter(GameState::GameInit), (
                 setup_camera, 
                 init_world,
@@ -102,7 +61,6 @@ fn main() {
         .add_systems(Update, (
                 handle_player_input, 
                 update_gun_transform, 
-                update_cursor_position,
                 handle_gun_input,
                 update_bullets,
                 camera_follow_player,
@@ -110,18 +68,7 @@ fn main() {
         .run();
 }
 
-fn load_assets(
-    mut texture_atlas: ResMut<GlobalTextureAtlasHandle>, 
-    mut image_handle: ResMut<GlobalSpriteSheetHandle>, 
-    asset_server: Res<AssetServer>, 
-    mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
-    mut next_state: ResMut<NextState<GameState>>
-){
-    image_handle.0 = Some(asset_server.load(SPRITE_SHEET_PATH));
-    let layout = TextureAtlasLayout::from_grid(UVec2::new(TILE_W, TILE_H), SPRITE_SHEET_W, SPRITE_SHEET_H, None, None);
-    texture_atlas.0 = Some(texture_atlas_layouts.add(layout));
-    next_state.set(GameState::GameInit);
-}
+
 
 fn setup_camera(mut commands: Commands) {
     commands.spawn(
@@ -277,22 +224,7 @@ fn handle_gun_input(
     }
 }
 
-fn update_cursor_position(
-    mut cursor_pos: ResMut<CursorPosition>,
-    window_query: Query<&Window, With<PrimaryWindow>>,
-    camera_query: Query<(&Camera, &GlobalTransform), With<Camera>>,
-){
-    if window_query.is_empty() || camera_query.is_empty(){
-        cursor_pos.0 = None;
-    }
 
-    let (camera, camera_transform) = camera_query.single();
-    let window = window_query.single();
-
-    cursor_pos.0 = window.cursor_position()
-        .and_then(|cursor| camera.viewport_to_world(camera_transform, cursor).ok())
-        .map(|ray| ray.origin.truncate());
-}
 
 fn update_bullets(
     mut bullet_query: Query<(&mut Transform, &BulletDirection), With<Bullet>>,
