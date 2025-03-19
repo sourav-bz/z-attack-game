@@ -34,7 +34,7 @@ fn init_world(
         Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
         AnimationTimer(Timer::from_seconds(0.15, TimerMode::Repeating)),
         Player,
-        PlayerState::default()
+        PlayerState::default(),
     ));
     commands.spawn((
         Sprite::from_atlas_image(

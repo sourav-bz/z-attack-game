@@ -7,10 +7,10 @@ pub struct PlayerPlugin;
 pub struct Player;
 
 #[derive(Component, Default)]
-pub enum PlayerState{
+pub enum PlayerState {
     #[default]
     Idle,
-    Moving
+    Moving,
 }
 
 impl Plugin for PlayerPlugin {
@@ -30,7 +30,7 @@ fn handle_player_input(
         return;
     }
 
-    let  (mut transform,mut player_state) = query.single_mut();
+    let (mut transform, mut player_state) = query.single_mut();
     let w_key = keyboard_input.pressed(KeyCode::KeyW) || keyboard_input.pressed(KeyCode::ArrowUp);
     let s_key = keyboard_input.pressed(KeyCode::KeyS) || keyboard_input.pressed(KeyCode::ArrowDown);
     let a_key = keyboard_input.pressed(KeyCode::KeyA) || keyboard_input.pressed(KeyCode::ArrowLeft);
@@ -58,7 +58,7 @@ fn handle_player_input(
         transform.translation += vec3(delta.x, delta.y, 0.0) * PLAYER_SPEED;
         transform.translation.z = 10.0;
         *player_state = PlayerState::Moving;
-    }else{
+    } else {
         *player_state = PlayerState::Idle;
     }
 }
