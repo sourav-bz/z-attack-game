@@ -1,5 +1,6 @@
 pub mod camera;
 pub mod constants;
+pub mod enemy;
 pub mod gun;
 pub mod player;
 pub mod resources;

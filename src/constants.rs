@@ -19,6 +19,11 @@ pub const WORLD_H: f32 = 2500.0;
 //player
 pub const PLAYER_SPEED: f32 = 2.0;
 
+//enemy
+pub const MAX_NUM_ENEMIES: u32 = 500;
+pub const ENEMY_SPAWN_INTERVAL: f32 = 1.0;
+pub const ENEMY_SPEED: f32 = 2.0;
+
 //bullet
 pub const BULLET_SPAWN_INTERVAL: f32 = 0.1;
 pub const BULLET_SPEED: f32 = 15.0;

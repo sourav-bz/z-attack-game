@@ -1,6 +1,7 @@
 use bevy::diagnostic::{FrameTimeDiagnosticsPlugin, LogDiagnosticsPlugin};
 use bevy::prelude::*;
 use z_attack_game::camera::CameraPlugin;
+use z_attack_game::enemy::EnemyPlugin;
 use z_attack_game::gun::GunPlugin;
 use z_attack_game::player::PlayerPlugin;
 use z_attack_game::world::WorldPlugin;
@@ -33,5 +34,6 @@ fn main() {
         .add_plugins(ResourcesPlugin)
         .add_plugins(GunPlugin)
         .add_plugins(WorldPlugin)
+        .add_plugins(EnemyPlugin)
         .run();
 }
