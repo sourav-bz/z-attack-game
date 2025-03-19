@@ -17,7 +17,7 @@ pub const WORLD_W: f32 = 3000.0;
 pub const WORLD_H: f32 = 2500.0;
 
 //player
-pub const PLAYER_SPEED: f32 = 2.0;
+pub const PLAYER_SPEED: f32 = 4.0;
 
 //enemy
 pub const MAX_NUM_ENEMIES: u32 = 500;

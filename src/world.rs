@@ -1,4 +1,5 @@
 use crate::{
+    animation::AnimationTimer,
     gun::{Gun, GunTimer},
     player::Player,
     *,
@@ -31,6 +32,7 @@ fn init_world(
             },
         ),
         Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
+        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
         Player,
     ));
     commands.spawn((
