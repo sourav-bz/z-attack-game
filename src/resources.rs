@@ -5,19 +5,18 @@ use crate::*;
 //resources
 #[derive(Resource)]
 pub struct GlobalTextureAtlas {
-    layout: Option<Handle<TextureAtlasLayout>>,
-    image: Option<Handle<Image>>,
+    pub layout: Option<Handle<TextureAtlasLayout>>,
+    pub image: Option<Handle<Image>>,
 }
 
 #[derive(Resource)]
-pub struct CursorPosition(Option<Vec2>);
+pub struct CursorPosition(pub Option<Vec2>);
 
-struct ResourcesPlugin;
+pub struct ResourcesPlugin;
 
 impl Plugin for ResourcesPlugin {
     fn build(&self, app: &mut App) {
-        app.insert_resource(GlobalTextureAtlasHandle(None))
-            .insert_resource(GlobalSpriteSheetHandle(None))
+        app.insert_resource(GlobalTextureAtlas::default())
             .insert_resource(CursorPosition(None))
             .add_systems(OnEnter(GameState::Loading), load_assets)
             .add_systems(
@@ -28,13 +27,12 @@ impl Plugin for ResourcesPlugin {
 }
 
 fn load_assets(
-    mut texture_atlas: ResMut<GlobalTextureAtlasHandle>,
-    mut image_handle: ResMut<GlobalSpriteSheetHandle>,
+    mut handle: ResMut<GlobalTextureAtlas>,
     asset_server: Res<AssetServer>,
     mut texture_atlas_layouts: ResMut<Assets<TextureAtlasLayout>>,
     mut next_state: ResMut<NextState<GameState>>,
 ) {
-    image_handle.0 = Some(asset_server.load(SPRITE_SHEET_PATH));
+    handle.image = Some(asset_server.load(SPRITE_SHEET_PATH));
     let layout = TextureAtlasLayout::from_grid(
         UVec2::new(TILE_W, TILE_H),
         SPRITE_SHEET_W,
@@ -42,7 +40,7 @@ fn load_assets(
         None,
         None,
     );
-    texture_atlas.0 = Some(texture_atlas_layouts.add(layout));
+    handle.layout = Some(texture_atlas_layouts.add(layout));
     next_state.set(GameState::GameInit);
 }
 
