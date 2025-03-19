@@ -1,6 +1,6 @@
 use bevy::prelude::*;
 
-use crate::{gun::Gun, player::Player, CursorPosition, GameState};
+use crate::{gun::Gun, player::{Player, PlayerState}, CursorPosition, GameState};
 
 pub struct AnimationsPlugin;
 
@@ -27,16 +27,20 @@ fn animation_timer_tick(
 
 fn animate_player(
     cursor_position: Res<CursorPosition>,
-    mut player_query: Query<(&mut Sprite, &Transform, &AnimationTimer), With<Player>>
+    mut player_query: Query<(&mut Sprite, &Transform, &PlayerState, &AnimationTimer), With<Player>>
 ) {
     if player_query.is_empty() {
         return;
     }
 
-    let (mut sprite, transform, timer) = player_query.single_mut();
+    let (mut sprite, transform, player_state, timer) = player_query.single_mut();
     if let Some(atlas) = &mut sprite.texture_atlas {
         if timer.just_finished() {
-            atlas.index = (atlas.index + 1) % 8;
+            let base_spirit_index = match player_state{
+                PlayerState::Idle => 0,
+                PlayerState::Moving => 4,
+            };
+            atlas.index = base_spirit_index + (atlas.index + 1) % 4;
         }
     }
 

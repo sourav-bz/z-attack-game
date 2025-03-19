@@ -1,7 +1,7 @@
 use crate::{
     animation::AnimationTimer,
     gun::{Gun, GunTimer},
-    player::Player,
+    player::{Player, PlayerState},
     *,
 };
 use bevy::{math::vec3, prelude::*, time::Stopwatch};
@@ -32,8 +32,9 @@ fn init_world(
             },
         ),
         Transform::from_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
-        AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+        AnimationTimer(Timer::from_seconds(0.15, TimerMode::Repeating)),
         Player,
+        PlayerState::default()
     ));
     commands.spawn((
         Sprite::from_atlas_image(
