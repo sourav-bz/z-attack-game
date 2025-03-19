@@ -1,6 +1,7 @@
 use bevy::prelude::*;
 
 use crate::{
+    enemy::{self, Enemy},
     gun::Gun,
     player::{Player, PlayerState},
     CursorPosition, GameState,
@@ -20,6 +21,7 @@ impl Plugin for AnimationsPlugin {
                 animate_player,
                 flip_player_sprite_x,
                 flip_gun_sprite_y,
+                flip_enemy_sprite_x,
             )
                 .run_if(in_state(GameState::InGame)),
         );
@@ -66,6 +68,24 @@ fn flip_player_sprite_x(
 
     if let Some(cursor_position) = cursor_position.0 {
         if cursor_position.x > transform.translation.x {
+            sprite.flip_x = false;
+        } else {
+            sprite.flip_x = true;
+        }
+    }
+}
+
+fn flip_enemy_sprite_x(
+    mut player_query: Query<&Transform, With<Player>>,
+    mut enemy_query: Query<(&mut Sprite, &Transform), With<Enemy>>,
+) {
+    if player_query.is_empty() || enemy_query.is_empty() {
+        return;
+    }
+
+    let player_pos = player_query.single().translation;
+    for (mut sprite, enemy_tranform) in enemy_query.iter_mut() {
+        if enemy_tranform.translation.x < player_pos.x {
             sprite.flip_x = false;
         } else {
             sprite.flip_x = true;
