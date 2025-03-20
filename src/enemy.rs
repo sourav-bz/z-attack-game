@@ -1,10 +1,18 @@
 use std::{f32::consts::PI, time::Duration};
 
-use bevy::{math::{vec2, vec3}, prelude::*, state::commands, time::common_conditions::on_timer, transform};
+use bevy::{
+    math::{vec2, vec3},
+    prelude::*,
+    state::commands,
+    time::common_conditions::on_timer,
+    transform,
+};
 use rand::Rng;
 
 use crate::{
-    animation::AnimationTimer, player::Player, GameState, GlobalTextureAtlas, ENEMY_HEALTH, ENEMY_SPAWN_INTERVAL, ENEMY_SPEED, MAX_NUM_ENEMIES, SPAWN_RATE_PER_SECOND, SPRITE_SCALE_FACTOR, WORLD_H, WORLD_W
+    animation::AnimationTimer, player::Player, GameState, GlobalTextureAtlas, ENEMY_HEALTH,
+    ENEMY_SPAWN_INTERVAL, ENEMY_SPEED, MAX_NUM_ENEMIES, SPAWN_RATE_PER_SECOND, SPRITE_SCALE_FACTOR,
+    WORLD_H, WORLD_W,
 };
 
 pub struct EnemyPlugin;
@@ -78,7 +86,7 @@ fn spawn_enemies(
 
 fn get_random_position_around(pos: Vec2) -> (f32, f32) {
     let mut rng = rand::rng();
-    let angle = rng.random_range(0.0..PI*2.0);
+    let angle = rng.random_range(0.0..PI * 2.0);
     let dist = rng.random_range(100.0..2000.0);
 
     let offset_x = angle.cos() * dist;
@@ -87,7 +95,7 @@ fn get_random_position_around(pos: Vec2) -> (f32, f32) {
     let random_x = pos.x + offset_x + 10.0;
     let random_y = pos.y + offset_y + 10.0;
 
-   (random_x, random_y)
+    (random_x, random_y)
 }
 
 fn despawn_dead_enemies(
@@ -104,8 +112,6 @@ fn despawn_dead_enemies(
         }
     }
 }
-
-
 
 impl Default for Enemy {
     fn default() -> Self {

@@ -4,6 +4,7 @@ use z_attack_game::animation::AnimationsPlugin;
 use z_attack_game::camera::CameraPlugin;
 use z_attack_game::collision::CollisionPlugin;
 use z_attack_game::enemy::EnemyPlugin;
+use z_attack_game::gui::GUIPlugin;
 use z_attack_game::gun::GunPlugin;
 use z_attack_game::player::PlayerPlugin;
 use z_attack_game::world::WorldPlugin;
@@ -39,5 +40,6 @@ fn main() {
         .add_plugins(WorldPlugin)
         .add_plugins(EnemyPlugin)
         .add_plugins(CollisionPlugin)
+        .add_plugins(GUIPlugin)
         .run();
 }

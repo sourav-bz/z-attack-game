@@ -42,9 +42,9 @@ impl Plugin for GunPlugin {
 
 fn despawn_old_bullets(
     mut commands: Commands,
-    mut bullet_query: Query<(&SpawnInstant, Entity), With<Bullet>>
+    mut bullet_query: Query<(&SpawnInstant, Entity), With<Bullet>>,
 ) {
-    for (instant, entity) in bullet_query.iter_mut(){
+    for (instant, entity) in bullet_query.iter_mut() {
         if instant.0.elapsed().as_secs_f32() > BULLET_LIFE_TIME_IN_SECS {
             commands.entity(entity).despawn();
         }
@@ -75,11 +75,11 @@ fn handle_gun_input(
     if gun_timer.0.elapsed_secs() >= BULLET_SPAWN_INTERVAL {
         gun_timer.0.reset();
 
-        for _ in 0..NUM_OF_BULLET_PER_SHOT{
+        for _ in 0..NUM_OF_BULLET_PER_SHOT {
             let dir = vec3(
                 bullet_direction.x + rng.random_range(-1.0..1.0),
-                bullet_direction.y + rng.random_range(-1.0..1.0), 
-                bullet_direction.z
+                bullet_direction.y + rng.random_range(-1.0..1.0),
+                bullet_direction.z,
             );
             commands.spawn((
                 Sprite::from_atlas_image(
@@ -95,7 +95,6 @@ fn handle_gun_input(
                 SpawnInstant(Instant::now()),
             ));
         }
-        
     }
 }
 

@@ -21,7 +21,7 @@ pub const PLAYER_SPEED: f32 = 4.0;
 
 //enemy
 pub const MAX_NUM_ENEMIES: u32 = 500;
-pub const SPAWN_RATE_PER_SECOND : u32 = 100;
+pub const SPAWN_RATE_PER_SECOND: u32 = 100;
 pub const ENEMY_SPAWN_INTERVAL: f32 = 1.0;
 pub const ENEMY_SPEED: f32 = 2.0;
 pub const ENEMY_HEALTH: f32 = 100.0;
