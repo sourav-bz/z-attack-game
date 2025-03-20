@@ -7,6 +7,7 @@ use crate::*;
 use bevy::math::{vec2, vec3};
 use bevy::prelude::*;
 use bevy::time::Stopwatch;
+use rand::Rng;
 
 pub struct GunPlugin;
 
@@ -69,23 +70,32 @@ fn handle_gun_input(
         return;
     }
 
+    let mut rng = rand::rng();
     let bullet_direction = gun_transform.local_x();
-
     if gun_timer.0.elapsed_secs() >= BULLET_SPAWN_INTERVAL {
         gun_timer.0.reset();
-        commands.spawn((
-            Sprite::from_atlas_image(
-                handle.image.clone().unwrap(),
-                TextureAtlas {
-                    layout: handle.layout.clone().unwrap(),
-                    index: 16,
-                },
-            ),
-            Transform::from_translation(vec3(gun_pos.x, gun_pos.y, 11.0)),
-            Bullet,
-            BulletDirection(*bullet_direction),
-            SpawnInstant(Instant::now()),
-        ));
+
+        for _ in 0..NUM_OF_BULLET_PER_SHOT{
+            let dir = vec3(
+                bullet_direction.x + rng.random_range(-1.0..1.0),
+                bullet_direction.y + rng.random_range(-1.0..1.0), 
+                bullet_direction.z
+            );
+            commands.spawn((
+                Sprite::from_atlas_image(
+                    handle.image.clone().unwrap(),
+                    TextureAtlas {
+                        layout: handle.layout.clone().unwrap(),
+                        index: 16,
+                    },
+                ),
+                Transform::from_translation(vec3(gun_pos.x, gun_pos.y, 11.0)),
+                Bullet,
+                BulletDirection(dir),
+                SpawnInstant(Instant::now()),
+            ));
+        }
+        
     }
 }
 
