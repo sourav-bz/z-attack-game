@@ -1,4 +1,5 @@
 use std::f32::consts::PI;
+use std::time::Instant;
 
 use crate::player::Player;
 use crate::resources::{CursorPosition, GlobalTextureAtlas};
@@ -16,6 +17,10 @@ pub struct GunTimer(pub Stopwatch);
 
 #[derive(Component)]
 pub struct Bullet;
+
+#[derive(Component)]
+pub struct SpawnInstant(Instant);
+
 #[derive(Component)]
 pub struct BulletDirection(Vec3);
 
@@ -23,9 +28,25 @@ impl Plugin for GunPlugin {
     fn build(&self, app: &mut App) {
         app.add_systems(
             Update,
-            (handle_gun_input, update_bullets, update_gun_transform)
+            (
+                handle_gun_input,
+                update_bullets,
+                update_gun_transform,
+                despawn_old_bullets,
+            )
                 .run_if(in_state(GameState::InGame)),
         );
+    }
+}
+
+fn despawn_old_bullets(
+    mut commands: Commands,
+    mut bullet_query: Query<(&SpawnInstant, Entity), With<Bullet>>
+) {
+    for (instant, entity) in bullet_query.iter_mut(){
+        if instant.0.elapsed().as_secs_f32() > BULLET_LIFE_TIME_IN_SECS {
+            commands.entity(entity).despawn();
+        }
     }
 }
 
@@ -63,6 +84,7 @@ fn handle_gun_input(
             Transform::from_translation(vec3(gun_pos.x, gun_pos.y, 11.0)),
             Bullet,
             BulletDirection(*bullet_direction),
+            SpawnInstant(Instant::now()),
         ));
     }
 }
@@ -103,5 +125,5 @@ fn update_gun_transform(
         player_pos.y + offset * angle.sin() - 15.0,
     );
     gun_transform.translation = vec3(new_gun_pos.x, new_gun_pos.y, gun_transform.translation.z);
-    gun_transform.translation.z = 11.0;
+    gun_transform.translation.z = 10.0;
 }

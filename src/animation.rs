@@ -57,14 +57,12 @@ fn animate_player(
     }
 }
 
-fn animate_enemy(
-    mut enemy_query: Query<(&mut Sprite, &AnimationTimer), With<Enemy>>,
-) {
+fn animate_enemy(mut enemy_query: Query<(&mut Sprite, &AnimationTimer), With<Enemy>>) {
     if enemy_query.is_empty() {
         return;
     }
 
-    for (mut sprite, timer) in enemy_query.iter_mut(){
+    for (mut sprite, timer) in enemy_query.iter_mut() {
         if let Some(atlas) = &mut sprite.texture_atlas {
             if timer.just_finished() {
                 atlas.index = 8 + (atlas.index + 1) % 4;

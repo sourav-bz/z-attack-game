@@ -4,13 +4,16 @@ use bevy::{math::vec3, prelude::*, state::commands, time::common_conditions::on_
 use rand::Rng;
 
 use crate::{
-    animation::AnimationTimer, player::Player, GameState, GlobalTextureAtlas, ENEMY_SPAWN_INTERVAL, ENEMY_SPEED, MAX_NUM_ENEMIES, SPRITE_SCALE_FACTOR, WORLD_H, WORLD_W
+    animation::AnimationTimer, player::Player, GameState, GlobalTextureAtlas, ENEMY_HEALTH,
+    ENEMY_SPAWN_INTERVAL, ENEMY_SPEED, MAX_NUM_ENEMIES, SPRITE_SCALE_FACTOR, WORLD_H, WORLD_W,
 };
 
 pub struct EnemyPlugin;
 
 #[derive(Component)]
-pub struct Enemy;
+pub struct Enemy {
+    pub health: f32,
+}
 
 impl Plugin for EnemyPlugin {
     fn build(&self, app: &mut App) {
@@ -18,8 +21,10 @@ impl Plugin for EnemyPlugin {
             Update,
             (
                 spawn_enemies.run_if(on_timer(Duration::from_secs_f32(ENEMY_SPAWN_INTERVAL))),
-                update_enemy_transform.run_if(in_state(GameState::InGame)),
-            ),
+                update_enemy_transform,
+                despawn_dead_enemies,
+            )
+                .run_if(in_state(GameState::InGame)),
         );
     }
 }
@@ -36,6 +41,7 @@ fn update_enemy_transform(
     for mut transform in enemy_query.iter_mut() {
         let dir = (player_pos - transform.translation).normalize();
         transform.translation += dir * ENEMY_SPEED;
+        transform.translation.z = 10.0;
     }
 }
 
@@ -67,8 +73,31 @@ fn spawn_enemies(
             ),
             Transform::from_translation(vec3(x, y, 1.0))
                 .with_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
-            Enemy,
+            Enemy::default(),
             AnimationTimer(Timer::from_seconds(0.08, TimerMode::Repeating)),
         ));
+    }
+}
+
+fn despawn_dead_enemies(
+    mut commands: Commands,
+    mut enemy_query: Query<(&Enemy, Entity), With<Enemy>>,
+) {
+    if enemy_query.is_empty() {
+        return;
+    }
+
+    for (enemy, entity) in enemy_query.iter_mut() {
+        if enemy.health <= 0.0 {
+            commands.entity(entity).despawn();
+        }
+    }
+}
+
+impl Default for Enemy {
+    fn default() -> Self {
+        Self {
+            health: ENEMY_HEALTH,
+        }
     }
 }
