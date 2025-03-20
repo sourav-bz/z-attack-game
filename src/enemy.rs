@@ -68,7 +68,7 @@ fn spawn_enemies(
             Transform::from_translation(vec3(x, y, 1.0))
                 .with_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
             Enemy,
-            AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
+            AnimationTimer(Timer::from_seconds(0.08, TimerMode::Repeating)),
         ));
     }
 }
