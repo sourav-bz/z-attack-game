@@ -19,6 +19,7 @@ impl Plugin for AnimationsPlugin {
             (
                 animation_timer_tick,
                 animate_player,
+                animate_enemy,
                 flip_player_sprite_x,
                 flip_gun_sprite_y,
                 flip_enemy_sprite_x,
@@ -52,6 +53,22 @@ fn animate_player(
                 PlayerState::Moving => 4,
             };
             atlas.index = base_spirit_index + (atlas.index + 1) % 4;
+        }
+    }
+}
+
+fn animate_enemy(
+    mut enemy_query: Query<(&mut Sprite, &AnimationTimer), With<Enemy>>,
+) {
+    if enemy_query.is_empty() {
+        return;
+    }
+
+    for (mut sprite, timer) in enemy_query.iter_mut(){
+        if let Some(atlas) = &mut sprite.texture_atlas {
+            if timer.just_finished() {
+                atlas.index = 8 + (atlas.index + 1) % 4;
+            }
         }
     }
 }

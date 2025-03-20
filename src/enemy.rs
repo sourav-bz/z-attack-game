@@ -4,8 +4,7 @@ use bevy::{math::vec3, prelude::*, state::commands, time::common_conditions::on_
 use rand::Rng;
 
 use crate::{
-    player::Player, GameState, GlobalTextureAtlas, ENEMY_SPAWN_INTERVAL, ENEMY_SPEED,
-    MAX_NUM_ENEMIES, SPRITE_SCALE_FACTOR, WORLD_H, WORLD_W,
+    animation::AnimationTimer, player::Player, GameState, GlobalTextureAtlas, ENEMY_SPAWN_INTERVAL, ENEMY_SPEED, MAX_NUM_ENEMIES, SPRITE_SCALE_FACTOR, WORLD_H, WORLD_W
 };
 
 pub struct EnemyPlugin;
@@ -69,6 +68,7 @@ fn spawn_enemies(
             Transform::from_translation(vec3(x, y, 1.0))
                 .with_scale(Vec3::splat(SPRITE_SCALE_FACTOR)),
             Enemy,
+            AnimationTimer(Timer::from_seconds(0.1, TimerMode::Repeating)),
         ));
     }
 }
