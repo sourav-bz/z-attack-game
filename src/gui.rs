@@ -2,7 +2,7 @@ use bevy::{
     color::palettes::css::GOLD, diagnostic::{DiagnosticsStore, FrameTimeDiagnosticsPlugin}, prelude::*
 };
 
-use crate::GameState;
+use crate::{enemy::Enemy, GameState};
 
 pub struct GUIPlugin;
 
@@ -69,15 +69,17 @@ fn spawn_debug_text(mut commands: Commands, asset_server: Res<AssetServer>) {
 fn update_debug_text(
     diagnostics: Res<DiagnosticsStore>,
     mut query: Query<&mut TextSpan, With<FpsText>>,
+    enemy_query: Query<(), With<Enemy>>
 ) {
     if query.is_empty() {
         return;
     }
 
+    let num_enemies = enemy_query.iter().count();
     for mut span in &mut query {
         if let Some(fps) = diagnostics.get(&FrameTimeDiagnosticsPlugin::FPS) {
             if let Some(value) = fps.smoothed() {
-                **span = format!("{value:.2}");
+                **span = format!("{value:.2} \n {num_enemies}");
             }
         }
     }
